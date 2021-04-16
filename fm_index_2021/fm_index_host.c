@@ -16,6 +16,7 @@
 #define QUERY_NUM 2  // number of queries
 #define DPU_NUM 64  // number of DPUs
 
+// ivan says hello
 
 int main() {
   
