@@ -8,13 +8,13 @@
 #include <string.h>
 
 #define DPU_BINARY "fm_index_dpu"
-#define STEP 1
-#define L_LENGTH 16
-#define SAMPLE_RATE 5
-#define OCC_INDEX_NUM 5
+#define STEP 1  // step size of L column
+#define L_LENGTH 16  // length of L column (rows)
+#define SAMPLE_RATE 5  // sample rate of occ
+#define OCC_INDEX_NUM 5  // number of occs per occ entry (depends on step)
 #define QUERY_LENGTH 3  // length of queries
 #define QUERY_NUM 2  // number of queries
-#define DPU_NUM 64
+#define DPU_NUM 64  // number of DPUs
 
 
 int main() {
@@ -35,6 +35,7 @@ int main() {
   DPU_ASSERT(dpu_alloc(DPU_NUM, NULL, &set));
   DPU_ASSERT(dpu_load(set, DPU_BINARY, NULL));
 
+  // read occ_table, L_column, F_offsets
   FILE *input = fopen("table.txt", "r");
   for(uint32_t i = 0; i < DPU_NUM; i++){
     for(uint32_t j = 0; j < OCC_INDEX_NUM; j++){
@@ -50,10 +51,12 @@ int main() {
   fclose(input);
 
 
+  // prepare host buffer
   DPU_FOREACH(set, dpu) {
     DPU_ASSERT(dpu_prepare_xfer(dpu, &L[dpu_index * L_LENGTH]));
     dpu_index ++;
   }
+  // push contents of host buffer to DPUs
   DPU_ASSERT(dpu_push_xfer(set, DPU_XFER_TO_DPU, "L", 0, sizeof(uint16_t) * L_LENGTH, DPU_XFER_ASYNC));
   dpu_index = 0;
 
