@@ -22,11 +22,16 @@
 int main() {
   
 
-  uint16_t L[L_LENGTH * DPU_NUM];
-  uint32_t sampled_OCC[(((L_LENGTH - 1) / (SAMPLE_RATE) + 1) * OCC_INDEX_NUM) * DPU_NUM];
-  uint32_t offsets[OCC_INDEX_NUM * DPU_NUM];
-  uint32_t query[QUERY_LENGTH * QUERY_NUM];
-  uint32_t num_query_found[DPU_NUM * QUERY_NUM];
+  //uint16_t L[L_LENGTH * DPU_NUM];
+  uint16_t *L = malloc(sizeof(uint16_t) * L_LENGTH * DPU_NUM);
+  //uint32_t sampled_OCC[(((L_LENGTH - 1) / (SAMPLE_RATE) + 1) * OCC_INDEX_NUM) * DPU_NUM];
+  uint32_t *sampled_OCC = malloc(sizeof(uint32_t) * (((L_LENGTH - 1) / (SAMPLE_RATE) + 1) * OCC_INDEX_NUM) * DPU_NUM);
+  //uint32_t offsets[OCC_INDEX_NUM * DPU_NUM];
+  uint32_t *offsets = malloc(sizeof(uint32_t) * OCC_INDEX_NUM * DPU_NUM);
+  //uint32_t query[QUERY_LENGTH * QUERY_NUM];
+  uint32_t *query = malloc(sizeof(uint32_t) * QUERY_LENGTH * QUERY_NUM);
+  //uint32_t num_query_found[DPU_NUM * QUERY_NUM];
+  uint32_t *num_query_found = malloc(sizeof(uint32_t) * DPU_NUM * QUERY_NUM);
   uint32_t dpu_index = 0;
   uint32_t scale = 1;
   char QUERY[CHAR_QUERY_LENGTH] = "GCGC";
@@ -78,6 +83,10 @@ int main() {
 
   DPU_ASSERT(dpu_sync(set));
 
+  free(L);
+  free(sampled_OCC);
+  free(offsets);
+
   // DPU_FOREACH(set, dpu) {
   //   DPU_ASSERT(dpu_copy_to(dpu, "L", 0, L, sizeof(uint16_t) * L_LENGTH));
   //   DPU_ASSERT(dpu_copy_to(dpu, "sampled_OCC", 0, sampled_OCC, sizeof(uint32_t) * ((L_LENGTH - 1) / (SAMPLE_RATE) + 1) * OCC_INDEX_NUM));
@@ -125,13 +134,16 @@ int main() {
   }
   DPU_ASSERT(dpu_sync(set));
 
+  DPU_ASSERT(dpu_free(set));
+  free(query);
+
   for(uint32_t i = 0; i < DPU_NUM; i++){
     for(uint32_t j = 0; j < QUERY_NUM; j++){
       printf("QUERY %d found in DPU %d: %d   ", j, i, num_query_found[i * QUERY_NUM + j]);
     }
     printf("\n");
   }
-
+  free(num_query_found);
   // DPU_ASSERT(dpu_free(set));
 
   return 0;
