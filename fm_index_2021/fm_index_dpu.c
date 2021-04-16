@@ -4,11 +4,11 @@
 #include<string.h>
 #include <mram.h>
 #include <perfcounter.h>
-#define STEP 1
+#define STEP 2
 #define L_LENGTH 16
 #define SAMPLE_RATE 5
-#define OCC_INDEX_NUM 5
-#define QUERY_LENGTH 3
+#define OCC_INDEX_NUM 25
+#define QUERY_LENGTH 2
 
 __mram uint16_t L[L_LENGTH];
 __mram uint32_t sampled_OCC[((L_LENGTH - 1) / (SAMPLE_RATE) + 1) * OCC_INDEX_NUM];

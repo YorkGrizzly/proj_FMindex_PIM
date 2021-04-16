@@ -6,18 +6,18 @@
 #include <dpu_profiler.h>
 #include <stdlib.h>
 #include <string.h>
+#include <math.h>
 
 #define DPU_BINARY "fm_index_dpu"
-#define STEP 1  // step size of L column
+#define STEP 2  // step size of L column
 #define L_LENGTH 16  // length of L column (rows)
 #define SAMPLE_RATE 5  // sample rate of occ
-#define OCC_INDEX_NUM 5  // number of occs per occ entry (depends on step)
-#define QUERY_LENGTH 3  // length of queries
+#define OCC_INDEX_NUM 25  // number of occs per occ entry (depends on step)
+#define GENOME_LENGTH 4  // length of searching genome
 #define QUERY_NUM 2  // number of queries
-#define DPU_NUM 64  // number of DPUs
+#define DPU_NUM 1  // number of DPUs
+#define QUERY_LENGTH (GENOME_LENGTH / STEP)  // length of encoded queries
 
-// ivan says hello
-// tienshuo says hello
  
 int main() {
   
@@ -28,8 +28,8 @@ int main() {
   uint32_t query[QUERY_LENGTH * QUERY_NUM];
   uint32_t num_query_found[DPU_NUM * QUERY_NUM];
   uint32_t dpu_index = 0;
-  char QUERY[STEP * QUERY_LENGTH] = "TAC";
-  uint32_t scale;
+  uint32_t scale = 1;
+  char QUERY[GENOME_LENGTH] = "GCGC";
 
   
   struct dpu_set_t set, dpu;
@@ -86,10 +86,11 @@ int main() {
 
   for(uint32_t query_num = 0; query_num < QUERY_NUM; query_num++){
     if(query_num == 1) {
-      strncpy(QUERY, "CGC", STEP * QUERY_LENGTH);
+      strncpy(QUERY, "ATCG", GENOME_LENGTH);
     }
     for(uint32_t i = 0; i < QUERY_LENGTH; i++){
       scale = 1;
+      query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] = 0;
       for(uint32_t j = 0; j < STEP; j++){
         if(QUERY[STEP * i + j] == 'A') query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 1;
         if(QUERY[STEP * i + j] == 'C') query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 2;
@@ -100,15 +101,16 @@ int main() {
     }
   }
 
+
   for(uint32_t i = 0; i < QUERY_NUM; i++){
 
     // DPU_FOREACH(set, dpu) {
 	  //   DPU_ASSERT(dpu_copy_to(dpu, "query", 0, query, sizeof(query)));
     // }
 
-    DPU_ASSERT(dpu_broadcast_to(set, "query", 0, &query[QUERY_LENGTH * i], sizeof(uint32_t) * QUERY_LENGTH, DPU_XFER_ASYNC));
+    DPU_ASSERT(dpu_broadcast_to(set, "query", 0, &query[QUERY_LENGTH * i], sizeof(uint32_t) * QUERY_LENGTH, DPU_XFER_DEFAULT));
 
-    DPU_ASSERT(dpu_launch(set, DPU_ASYNCHRONOUS));
+    DPU_ASSERT(dpu_launch(set, DPU_SYNCHRONOUS));
   
     DPU_FOREACH(set, dpu)
     {  
@@ -117,7 +119,7 @@ int main() {
         DPU_ASSERT(dpu_prepare_xfer(dpu, &num_query_found[dpu_index * QUERY_NUM + i]));
         dpu_index ++;
     }
-    DPU_ASSERT(dpu_push_xfer(set, DPU_XFER_FROM_DPU, "num_query_found", 0, sizeof(uint32_t), DPU_XFER_ASYNC));
+    DPU_ASSERT(dpu_push_xfer(set, DPU_XFER_FROM_DPU, "num_query_found", 0, sizeof(uint32_t), DPU_XFER_DEFAULT));
     dpu_index = 0;
     //DPU_ASSERT(dpu_sync(set));
   }

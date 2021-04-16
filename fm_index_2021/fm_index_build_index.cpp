@@ -6,7 +6,7 @@
 #include <math.h>
 #include <fstream>
 
-#define STEP 1
+#define STEP 2
 #define OCC_SAMPLING_DIST 5
 
 using namespace std;
@@ -168,7 +168,7 @@ int main()
 
     // write to files
     fstream table;
-    table.open("table.txt", ios::app);
+    table.open("table.txt", ios::out);
     for(int a : F_offsets)
     {
         table << a << " ";
