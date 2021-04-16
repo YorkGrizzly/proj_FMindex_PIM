@@ -9,14 +9,14 @@
 #include <math.h>
 
 #define DPU_BINARY "fm_index_dpu"
-#define STEP 2  // step size of L column
+#define STEP 1  // step size of L column
 #define L_LENGTH 16  // length of L column (rows)
 #define SAMPLE_RATE 5  // sample rate of occ
-#define OCC_INDEX_NUM 25  // number of occs per occ entry (depends on step)
-#define GENOME_LENGTH 4  // length of searching genome
+#define OCC_INDEX_NUM 5  // number of occs per occ entry (depends on step)
+#define CHAR_QUERY_LENGTH 4  // length of searching genome
 #define QUERY_NUM 2  // number of queries
 #define DPU_NUM 1  // number of DPUs
-#define QUERY_LENGTH (GENOME_LENGTH / STEP)  // length of encoded queries
+#define QUERY_LENGTH (CHAR_QUERY_LENGTH / STEP)  // length of encoded queries
 
  
 int main() {
@@ -29,7 +29,7 @@ int main() {
   uint32_t num_query_found[DPU_NUM * QUERY_NUM];
   uint32_t dpu_index = 0;
   uint32_t scale = 1;
-  char QUERY[GENOME_LENGTH] = "GCGC";
+  char QUERY[CHAR_QUERY_LENGTH] = "GCGC";
 
   
   struct dpu_set_t set, dpu;
@@ -86,7 +86,7 @@ int main() {
 
   for(uint32_t query_num = 0; query_num < QUERY_NUM; query_num++){
     if(query_num == 1) {
-      strncpy(QUERY, "ATCG", GENOME_LENGTH);
+      strncpy(QUERY, "ATCG", CHAR_QUERY_LENGTH);
     }
     for(uint32_t i = 0; i < QUERY_LENGTH; i++){
       scale = 1;
