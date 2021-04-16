@@ -1,0 +1,4 @@
+dpu-upmem-dpurte-clang fm_index_dpu.c -o fm_index_dpu
+gcc --std=c99 fm_index_host.c -o fm_index_host `dpu-pkg-config --cflags --libs dpu`
+#./fm_index_host
+dpu-profiling functions -o fm_index.vcf -A -a ./fm_index_host
