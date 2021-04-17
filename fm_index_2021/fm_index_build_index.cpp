@@ -130,7 +130,7 @@ void extract_tables(const std::vector<std::string> &rotated_and_sorted_strings, 
 
 int main()
 {
-    const std::string reference_string = "CGCGCGCGCGCGCGC$";
+    const std::string reference_string = "ATCGCGCGCGCATCG$";
     // std::cout << reference_string.length() << std::endl;
 
     std::vector<std::string> sorted_strings = rotate_and_sort(reference_string);

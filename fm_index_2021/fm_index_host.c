@@ -9,27 +9,32 @@
 #include <math.h>
 
 #define DPU_BINARY "fm_index_dpu"
-#define STEP 2  // step size of L column
+#define STEP 1  // step size of L column
 #define L_LENGTH 16  // length of L column (rows)
 #define SAMPLE_RATE 5  // sample rate of occ
-#define OCC_INDEX_NUM 25  // number of occs per occ entry (depends on step)
-#define GENOME_LENGTH 4  // length of searching genome
+#define OCC_INDEX_NUM 5  // number of occs per occ entry (depends on step)
+#define CHAR_QUERY_LENGTH 4  // length of searching genome
 #define QUERY_NUM 2  // number of queries
 #define DPU_NUM 1  // number of DPUs
-#define QUERY_LENGTH (GENOME_LENGTH / STEP)  // length of encoded queries
+#define QUERY_LENGTH (CHAR_QUERY_LENGTH / STEP)  // length of encoded queries
 
  
 int main() {
   
 
-  uint16_t L[L_LENGTH * DPU_NUM];
-  uint32_t sampled_OCC[(((L_LENGTH - 1) / (SAMPLE_RATE) + 1) * OCC_INDEX_NUM) * DPU_NUM];
-  uint32_t offsets[OCC_INDEX_NUM * DPU_NUM];
-  uint32_t query[QUERY_LENGTH * QUERY_NUM];
-  uint32_t num_query_found[DPU_NUM * QUERY_NUM];
+  //uint16_t L[L_LENGTH * DPU_NUM];
+  uint16_t *L = malloc(sizeof(uint16_t) * L_LENGTH * DPU_NUM);
+  //uint32_t sampled_OCC[(((L_LENGTH - 1) / (SAMPLE_RATE) + 1) * OCC_INDEX_NUM) * DPU_NUM];
+  uint32_t *sampled_OCC = malloc(sizeof(uint32_t) * (((L_LENGTH - 1) / (SAMPLE_RATE) + 1) * OCC_INDEX_NUM) * DPU_NUM);
+  //uint32_t offsets[OCC_INDEX_NUM * DPU_NUM];
+  uint32_t *offsets = malloc(sizeof(uint32_t) * OCC_INDEX_NUM * DPU_NUM);
+  //uint32_t query[QUERY_LENGTH * QUERY_NUM];
+  uint32_t *query = malloc(sizeof(uint32_t) * QUERY_LENGTH * QUERY_NUM);
+  //uint32_t num_query_found[DPU_NUM * QUERY_NUM];
+  uint32_t *num_query_found = malloc(sizeof(uint32_t) * DPU_NUM * QUERY_NUM);
   uint32_t dpu_index = 0;
   uint32_t scale = 1;
-  char QUERY[GENOME_LENGTH] = "GCGC";
+  char QUERY[CHAR_QUERY_LENGTH] = "GCGC";
 
   
   struct dpu_set_t set, dpu;
@@ -78,6 +83,10 @@ int main() {
 
   DPU_ASSERT(dpu_sync(set));
 
+  free(L);
+  free(sampled_OCC);
+  free(offsets);
+
   // DPU_FOREACH(set, dpu) {
   //   DPU_ASSERT(dpu_copy_to(dpu, "L", 0, L, sizeof(uint16_t) * L_LENGTH));
   //   DPU_ASSERT(dpu_copy_to(dpu, "sampled_OCC", 0, sampled_OCC, sizeof(uint32_t) * ((L_LENGTH - 1) / (SAMPLE_RATE) + 1) * OCC_INDEX_NUM));
@@ -86,7 +95,7 @@ int main() {
 
   for(uint32_t query_num = 0; query_num < QUERY_NUM; query_num++){
     if(query_num == 1) {
-      strncpy(QUERY, "ATCG", GENOME_LENGTH);
+      strncpy(QUERY, "ATCG", CHAR_QUERY_LENGTH);
     }
     for(uint32_t i = 0; i < QUERY_LENGTH; i++){
       scale = 1;
@@ -125,13 +134,16 @@ int main() {
   }
   DPU_ASSERT(dpu_sync(set));
 
+  DPU_ASSERT(dpu_free(set));
+  free(query);
+
   for(uint32_t i = 0; i < DPU_NUM; i++){
     for(uint32_t j = 0; j < QUERY_NUM; j++){
       printf("QUERY %d found in DPU %d: %d   ", j, i, num_query_found[i * QUERY_NUM + j]);
     }
     printf("\n");
   }
-
+  free(num_query_found);
   // DPU_ASSERT(dpu_free(set));
 
   return 0;
