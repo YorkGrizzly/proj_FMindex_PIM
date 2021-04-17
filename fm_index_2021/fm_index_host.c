@@ -9,10 +9,10 @@
 #include <math.h>
 
 #define DPU_BINARY "fm_index_dpu"
-#define STEP 1  // step size of L column
+#define STEP 2  // step size of L column
 #define L_LENGTH 16  // length of L column (rows)
-#define SAMPLE_RATE 5  // sample rate of occ
-#define OCC_INDEX_NUM 5  // number of occs per occ entry (depends on step)
+#define SAMPLE_RATE 9  // sample rate of occ
+#define OCC_INDEX_NUM 25  // number of occs per occ entry (depends on step)
 #define CHAR_QUERY_LENGTH 4  // length of searching genome
 #define QUERY_NUM 2  // number of queries
 #define DPU_NUM 1  // number of DPUs
@@ -101,10 +101,10 @@ int main() {
       scale = 1;
       query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] = 0;
       for(uint32_t j = 0; j < STEP; j++){
-        if(QUERY[STEP * i + j] == 'A') query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 1;
-        if(QUERY[STEP * i + j] == 'C') query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 2;
-        if(QUERY[STEP * i + j] == 'G') query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 3;
-        if(QUERY[STEP * i + j] == 'T') query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 4;
+        if(QUERY[STEP * i + STEP - j - 1] == 'A') query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 1;
+        if(QUERY[STEP * i + STEP - j - 1] == 'C') query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 2;
+        if(QUERY[STEP * i + STEP - j - 1] == 'G') query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 3;
+        if(QUERY[STEP * i + STEP - j - 1] == 'T') query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 4;
         scale *= 5;
       }
     }

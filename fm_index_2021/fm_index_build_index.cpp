@@ -7,7 +7,7 @@
 #include <fstream>
 
 #define STEP 2
-#define OCC_SAMPLING_DIST 1
+#define OCC_SAMPLING_DIST 9
 
 // using namespace std;
 
@@ -39,7 +39,7 @@ std::vector<std::string> rotate_and_sort(const std::string &reference_string)
 uint32_t encode_to_int(std::string string_to_encode)
 {
     uint32_t encoded_value = 0;
-    for(size_t i = 0; i < string_to_encode.size(); ++i)
+    for(int i = string_to_encode.size() - 1; i >= 0; --i)
     {
         switch(string_to_encode[i])
         {
@@ -47,16 +47,16 @@ uint32_t encode_to_int(std::string string_to_encode)
                 // encoded_value += 0 * pow(5, i);
             break;
             case 'A':
-                encoded_value += 1 * pow(5, i);
+                encoded_value += 1 * pow(5, string_to_encode.size() - 1 - i);
             break;
             case 'C':
-                encoded_value += 2 * pow(5, i);
+                encoded_value += 2 * pow(5, string_to_encode.size() - 1 - i);
             break;
             case 'G':
-                encoded_value += 3 * pow(5, i);
+                encoded_value += 3 * pow(5, string_to_encode.size() - 1 - i);
             break;
             case 'T':
-                encoded_value += 4 * pow(5, i);
+                encoded_value += 4 * pow(5, string_to_encode.size() -1 - i);
             break;
         }
     }
@@ -66,34 +66,34 @@ uint32_t encode_to_int(std::string string_to_encode)
 std::string decode_to_string(uint32_t int_to_decode)
 {
     std::string decoded_string;
-    for(int i = STEP - 1; i >= 0; --i)
+    for(size_t i = 0; i < STEP; ++i)
     {
-        switch((int_to_decode / (int)pow(5, i)))
+        switch((int_to_decode / (int)pow(5, STEP - 1 - i)))
         {
             case 0:
-                decoded_string.insert(0, "$");
+                decoded_string.push_back('$');
             break;
 
             case 1:
-                decoded_string.insert(0, "A");
+                decoded_string.push_back('A');
             break;
 
             case 2:
-                decoded_string.insert(0, "C");
+                decoded_string.push_back('C');
             break;
 
             case 3:
-                decoded_string.insert(0, "G");
+                decoded_string.push_back('G');
             break;
 
             case 4:
-                decoded_string.insert(0, "T");
+                decoded_string.push_back('T');
             break;
 
             default:
                 std::cout << "UNRECOGNIZED CHARACTER DURING DECODE!!\n";
         }
-        int_to_decode %= (int)pow(5, i);
+        int_to_decode %= (int)pow(5, STEP - 1 - i);
     }
     return decoded_string;
 }
@@ -130,8 +130,8 @@ void extract_tables(const std::vector<std::string> &rotated_and_sorted_strings, 
 
 int main()
 {
-    const std::string reference_string = "ATCGCGCGCGCATCG$";
-    // std::cout << reference_string.length() << std::endl;
+    const std::string reference_string = "ATCGAGCGCGCATCG$";
+    std::cout << "size of reference: " << reference_string.length() << std::endl;
 
     std::vector<std::string> sorted_strings = rotate_and_sort(reference_string);
     std::vector<size_t> F_offsets(pow(5, STEP), 0);
@@ -139,9 +139,10 @@ int main()
     std::vector<std::vector<uint32_t>> occ_table;
 
     // print rotated strings
-    for(std::string& _str : sorted_strings)
+    for(size_t i = 0; i < sorted_strings.size(); ++i)
     {
-        std::cout << _str << std::endl;
+        std::cout << i << ": ";
+        std::cout << sorted_strings[i] << std::endl;
     }
    
     extract_tables(sorted_strings, F_offsets, L_column, occ_table);
@@ -150,8 +151,11 @@ int main()
     std::cout << "printing F offsets:" << std::endl;
     for(size_t i = 0; i < F_offsets.size(); ++i)
     {
-        std::cout << decode_to_string(i) << ": ";
-        std::cout << F_offsets[i] << std::endl;
+        if(F_offsets[i])
+        {
+            std::cout << decode_to_string(i) << ": ";
+            std::cout << F_offsets[i] << std::endl;
+        }
     }
 
     // print L column
@@ -159,6 +163,7 @@ int main()
     for(uint32_t a : L_column)
     {
         std::cout << decode_to_string(a) << std::endl;
+        // std::cout << a << std::endl;
     }
 
     // print occ table

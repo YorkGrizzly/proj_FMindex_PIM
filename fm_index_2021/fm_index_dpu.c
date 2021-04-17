@@ -4,10 +4,12 @@
 #include<string.h>
 #include <mram.h>
 #include <perfcounter.h>
-#define STEP 1
+
+
+#define STEP 2
 #define L_LENGTH 16
-#define SAMPLE_RATE 5
-#define OCC_INDEX_NUM 5
+#define SAMPLE_RATE 9
+#define OCC_INDEX_NUM 25
 #define CHAR_QUERY_LENGTH 4
 #define QUERY_LENGTH (CHAR_QUERY_LENGTH / STEP)
 
@@ -35,10 +37,14 @@ int main() {
     uint32_t update_range_min;
     uint32_t update_range_max;
     uint32_t SEARCH_ROUND = QUERY_LENGTH - 1;
+    bool not_found_flag = 0;
     
     num_query_found = 0;
 
-    if(offsets[query[0]] == 0) SEARCH_ROUND = 0;
+    if(offsets[query[0]] == 0) {
+        SEARCH_ROUND = 0;
+        not_found_flag = 1;
+    }
     else range_min = offsets[query[0]] - 1;
 
     if(query[0] == OCC_INDEX_NUM - 1) range_max = L_LENGTH - 1;
@@ -52,10 +58,13 @@ int main() {
         }
     }
 
-    //printf("range_min: %d, range_max: %d\n", range_min, range_max);
+    printf("range_min: %d, range_max: %d\n", range_min, range_max);
 
     for(uint32_t search_round = 0; search_round < SEARCH_ROUND; search_round++){
-        if(offsets[query[search_round + 1]] == 0) break;
+        if(offsets[query[search_round + 1]] == 0) {
+            not_found_flag = 1;
+            break;
+        }
         //update range_min
         if((range_min % SAMPLE_RATE <= SAMPLE_RATE / 2) || (range_min / SAMPLE_RATE >= (L_LENGTH - 1) / SAMPLE_RATE)){
             update_range_min = offsets[query[search_round + 1]] - 1 + sampled_OCC[((range_min / SAMPLE_RATE) * OCC_INDEX_NUM) + query[search_round + 1]] - 1;
@@ -93,20 +102,18 @@ int main() {
             }
         }
 
-        //printf("updated range_min: %d, updated range_max: %d\n", update_range_min, update_range_max);
-
-        if(update_range_min > update_range_max){
-            num_query_found = 0;
-            break;
-        }
-
-        if(search_round == SEARCH_ROUND - 1){
-            num_query_found = update_range_max - update_range_min + 1;
-        }
+        printf("updated range_min: %d, updated range_max: %d\n", update_range_min, update_range_max);
 
         range_min = update_range_min;
         range_max = update_range_max;
+
+        if(range_min > range_max) break;
     }
+
+    if(range_min > range_max || not_found_flag == 1) num_query_found = 0;
+    else num_query_found = range_max - range_min + 1;
+
+
     //printf("num_query_found: %d\n", num_query_found);
     return 0;
 }
