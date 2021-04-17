@@ -7,9 +7,9 @@
 #include <fstream>
 
 #define STEP 2
-#define OCC_SAMPLING_DIST 5
+#define OCC_SAMPLING_DIST 1
 
-using namespace std;
+// using namespace std;
 
 // void print_vector(std::vector<auto> my_vec)
 // {
@@ -25,7 +25,7 @@ std::vector<std::string> rotate_and_sort(const std::string &reference_string)
     std::vector<std::string> rotated_and_sorted_strings;
 
     std::string current_rotation = reference_string;
-    // std::cout << current_rotation << std::endl;
+    // std::cout << current_rotation.size() << std::endl;
     for(size_t i = 0; i < reference_string.length(); ++i)
     {
         current_rotation.push_back(current_rotation[0]);
@@ -63,46 +63,53 @@ uint32_t encode_to_int(std::string string_to_encode)
     return encoded_value;
 }
 
+std::string decode_to_string(uint32_t int_to_decode)
+{
+    std::string decoded_string;
+    for(int i = STEP - 1; i >= 0; --i)
+    {
+        switch((int_to_decode / (int)pow(5, i)))
+        {
+            case 0:
+                decoded_string.insert(0, "$");
+            break;
+
+            case 1:
+                decoded_string.insert(0, "A");
+            break;
+
+            case 2:
+                decoded_string.insert(0, "C");
+            break;
+
+            case 3:
+                decoded_string.insert(0, "G");
+            break;
+
+            case 4:
+                decoded_string.insert(0, "T");
+            break;
+
+            default:
+                std::cout << "UNRECOGNIZED CHARACTER DURING DECODE!!\n";
+        }
+        int_to_decode %= (int)pow(5, i);
+    }
+    return decoded_string;
+}
+
 void extract_tables(const std::vector<std::string> &rotated_and_sorted_strings, std::vector<size_t> &F_offsets, std::vector<uint32_t> &L_column, std::vector<std::vector<uint32_t>> &occ_table)
 {
     std::vector<uint32_t> running_occ(pow(5, STEP), 0);
-    std::cout << running_occ.size() << std::endl;
+    // std::cout << running_occ.size() << std::endl;
     for(size_t i = 0; i < rotated_and_sorted_strings.size(); ++i)
     {
         // F_offsets
-        char first_char = rotated_and_sorted_strings[i][0];
-        switch(first_char)
+        std::string F_string = rotated_and_sorted_strings[i].substr(0, STEP);
+        uint32_t encoded_F = encode_to_int(F_string);
+        if(F_offsets[encoded_F] == 0)
         {
-            case '$':
-                if(F_offsets[0] == 0)
-                {
-                    F_offsets[0] = i + 1;
-                }
-                break;
-            case 'A':
-                if(F_offsets[1] == 0)
-                {
-                    F_offsets[1] = i + 1;
-                }
-                break;
-            case 'C':
-                if(F_offsets[2] == 0)
-                {
-                    F_offsets[2] = i + 1;
-                }
-                break;
-            case 'G':
-                if(F_offsets[3] == 0)
-                {
-                    F_offsets[3] = i + 1;
-                }
-                break;
-            case 'T':
-                if(F_offsets[4] == 0)
-                {
-                    F_offsets[4] = i + 1;
-                }
-                break;
+            F_offsets[encoded_F] = i + 1;
         }
 
         uint32_t encoded_L = encode_to_int(rotated_and_sorted_strings[i].substr(rotated_and_sorted_strings.size() - STEP));
@@ -113,11 +120,9 @@ void extract_tables(const std::vector<std::string> &rotated_and_sorted_strings, 
         ++running_occ[encoded_L];
         if(i % OCC_SAMPLING_DIST == 0)
         {
-            std::cout << "sampled at " <<  i << std::endl;
+            // std::cout << "sampled at " <<  i << std::endl;
             occ_table.push_back(running_occ);
         }
-
-
     }
 
 }
@@ -129,7 +134,7 @@ int main()
     // std::cout << reference_string.length() << std::endl;
 
     std::vector<std::string> sorted_strings = rotate_and_sort(reference_string);
-    std::vector<size_t> F_offsets = {0, 0, 0, 0, 0};  // $, A, C, G, T
+    std::vector<size_t> F_offsets(pow(5, STEP), 0);
     std::vector<uint32_t> L_column;
     std::vector<std::vector<uint32_t>> occ_table;
 
@@ -143,23 +148,31 @@ int main()
 
     // print F offsets
     std::cout << "printing F offsets:" << std::endl;
-    for(int a : F_offsets)
+    for(size_t i = 0; i < F_offsets.size(); ++i)
     {
-        std::cout << a << std::endl;
+        std::cout << decode_to_string(i) << ": ";
+        std::cout << F_offsets[i] << std::endl;
     }
+
     // print L column
     std::cout << "printing L column:" << std::endl;
     for(uint32_t a : L_column)
     {
-        std::cout << a << std::endl;
+        std::cout << decode_to_string(a) << std::endl;
     }
+
     // print occ table
     std::cout << "printing Occ table:" << std::endl;
+    for(size_t i = 0; i < occ_table[0].size(); ++i)
+    {
+        std::cout << decode_to_string(i) << " ";
+    }
+    std::cout << std::endl;
     for(auto &occ_entry : occ_table)
     {
         for(uint32_t &occ : occ_entry)
         {
-            std::cout << occ << " ";
+            std::cout << occ << std::string(STEP, ' ');
         }
         std::cout << std::endl;
     }
@@ -167,8 +180,8 @@ int main()
 
 
     // write to files
-    fstream table;
-    table.open("table.txt", ios::out);
+    std::fstream table;
+    table.open("table.txt", std::ios::out);
     for(int a : F_offsets)
     {
         table << a << " ";
