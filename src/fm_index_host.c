@@ -10,12 +10,12 @@
 
 #define DPU_BINARY "fm_index_dpu"
 #define STEP 2  // step size of L column
-#define L_LENGTH 16  // length of L column (rows)
+#define L_LENGTH 101  // length of L column (rows)
 #define SAMPLE_RATE 9  // sample rate of occ
 #define OCC_INDEX_NUM 25  // number of occs per occ entry (depends on step)
-#define CHAR_QUERY_LENGTH 4  // length of searching genome
+#define CHAR_QUERY_LENGTH 8  // length of searching genome
 #define QUERY_NUM 2  // number of queries
-#define DPU_NUM 1  // number of DPUs
+#define DPU_NUM 640  // number of DPUs
 #define QUERY_LENGTH (CHAR_QUERY_LENGTH / STEP)  // length of encoded queries
 
  
@@ -23,7 +23,7 @@ int main() {
   
 
   //uint16_t L[L_LENGTH * DPU_NUM];
-  uint16_t *L = malloc(sizeof(uint16_t) * L_LENGTH * DPU_NUM);
+  uint64_t *L = malloc(sizeof(uint64_t) * L_LENGTH * DPU_NUM);
   //uint32_t sampled_OCC[(((L_LENGTH - 1) / (SAMPLE_RATE) + 1) * OCC_INDEX_NUM) * DPU_NUM];
   uint32_t *sampled_OCC = malloc(sizeof(uint32_t) * (((L_LENGTH - 1) / (SAMPLE_RATE) + 1) * OCC_INDEX_NUM) * DPU_NUM);
   //uint32_t offsets[OCC_INDEX_NUM * DPU_NUM];
@@ -34,7 +34,7 @@ int main() {
   uint32_t *num_query_found = malloc(sizeof(uint32_t) * DPU_NUM * QUERY_NUM);
   uint32_t dpu_index = 0;
   uint32_t scale = 1;
-  char QUERY[CHAR_QUERY_LENGTH] = "GCGC";
+  char QUERY[CHAR_QUERY_LENGTH] = "GCGCTCTA";
 
   
   struct dpu_set_t set, dpu;
@@ -43,7 +43,7 @@ int main() {
   DPU_ASSERT(dpu_load(set, DPU_BINARY, NULL));
 
   // read occ_table, L_column, F_offsets
-  FILE *input = fopen("table.txt", "r");
+  FILE *input = fopen("../table.txt", "r");
   for(uint32_t i = 0; i < DPU_NUM; i++){
     for(uint32_t j = 0; j < OCC_INDEX_NUM; j++){
       fscanf(input, "%d", &offsets[i * OCC_INDEX_NUM + j]);
@@ -64,7 +64,7 @@ int main() {
     dpu_index ++;
   }
   // push contents of host buffer to DPUs
-  DPU_ASSERT(dpu_push_xfer(set, DPU_XFER_TO_DPU, "L", 0, sizeof(uint16_t) * L_LENGTH, DPU_XFER_ASYNC));
+  DPU_ASSERT(dpu_push_xfer(set, DPU_XFER_TO_DPU, "L", 0, sizeof(uint64_t) * L_LENGTH, DPU_XFER_ASYNC));
   dpu_index = 0;
 
   DPU_FOREACH(set, dpu) {
@@ -94,8 +94,8 @@ int main() {
   // }
 
   for(uint32_t query_num = 0; query_num < QUERY_NUM; query_num++){
-    if(query_num == 1) {
-      strncpy(QUERY, "ATCG", CHAR_QUERY_LENGTH);
+    if(query_num == 1){
+      strncpy(QUERY, "TTTTTTTT", CHAR_QUERY_LENGTH);
     }
     for(uint32_t i = 0; i < QUERY_LENGTH; i++){
       scale = 1;
@@ -121,17 +121,25 @@ int main() {
 
     DPU_ASSERT(dpu_launch(set, DPU_SYNCHRONOUS));
   
-    DPU_FOREACH(set, dpu)
-    {  
-        //DPU_ASSERT(dpu_log_read(dpu, stdout));
-        //DPU_ASSERT(dpu_copy_from(dpu, "num_query_found", 0, &num_query_found[dpu_index][i], sizeof(int)));
-        DPU_ASSERT(dpu_prepare_xfer(dpu, &num_query_found[dpu_index * QUERY_NUM + i]));
-        dpu_index ++;
-    }
-    DPU_ASSERT(dpu_push_xfer(set, DPU_XFER_FROM_DPU, "num_query_found", 0, sizeof(uint32_t), DPU_XFER_DEFAULT));
-    dpu_index = 0;
+    // DPU_FOREACH(set, dpu)
+    // {  
+    //     //DPU_ASSERT(dpu_log_read(dpu, stdout));
+    //     //DPU_ASSERT(dpu_copy_from(dpu, "num_query_found", 0, &num_query_found[dpu_index][i], sizeof(int)));
+    //     DPU_ASSERT(dpu_prepare_xfer(dpu, &num_query_found[dpu_index * QUERY_NUM + i]));
+    //     dpu_index ++;
+    // }
+    // DPU_ASSERT(dpu_push_xfer(set, DPU_XFER_FROM_DPU, "num_query_found", 0, sizeof(uint32_t), DPU_XFER_DEFAULT));
+    // dpu_index = 0;
     //DPU_ASSERT(dpu_sync(set));
   }
+
+  DPU_FOREACH(set, dpu) {
+        DPU_ASSERT(dpu_prepare_xfer(dpu, &num_query_found[dpu_index * QUERY_NUM]));
+        dpu_index ++;
+  }
+  DPU_ASSERT(dpu_push_xfer(set, DPU_XFER_FROM_DPU, "num_query_found", 0, sizeof(uint32_t) * QUERY_NUM, DPU_XFER_DEFAULT));
+  dpu_index = 0;
+
   DPU_ASSERT(dpu_sync(set));
 
   DPU_ASSERT(dpu_free(set));
