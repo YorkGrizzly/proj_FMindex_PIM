@@ -117,9 +117,9 @@ int main() {
 	  //   DPU_ASSERT(dpu_copy_to(dpu, "query", 0, query, sizeof(query)));
     // }
 
-    DPU_ASSERT(dpu_broadcast_to(set, "query", 0, &query[QUERY_LENGTH * i], sizeof(uint32_t) * QUERY_LENGTH, DPU_XFER_DEFAULT));
+    DPU_ASSERT(dpu_broadcast_to(set, "query", 0, &query[QUERY_LENGTH * i], sizeof(uint32_t) * QUERY_LENGTH, DPU_XFER_ASYNC));
 
-    DPU_ASSERT(dpu_launch(set, DPU_SYNCHRONOUS));
+    DPU_ASSERT(dpu_launch(set, DPU_ASYNCHRONOUS));
   
     // DPU_FOREACH(set, dpu)
     // {  
@@ -128,7 +128,7 @@ int main() {
     //     DPU_ASSERT(dpu_prepare_xfer(dpu, &num_query_found[dpu_index * QUERY_NUM + i]));
     //     dpu_index ++;
     // }
-    // DPU_ASSERT(dpu_push_xfer(set, DPU_XFER_FROM_DPU, "num_query_found", 0, sizeof(uint32_t), DPU_XFER_DEFAULT));
+    // DPU_ASSERT(dpu_push_xfer(set, DPU_XFER_FROM_DPU, "num_query_found", 0, sizeof(uint32_t), DPU_XFER_ASYNC));
     // dpu_index = 0;
     //DPU_ASSERT(dpu_sync(set));
   }
@@ -137,7 +137,7 @@ int main() {
         DPU_ASSERT(dpu_prepare_xfer(dpu, &num_query_found[dpu_index * QUERY_NUM]));
         dpu_index ++;
   }
-  DPU_ASSERT(dpu_push_xfer(set, DPU_XFER_FROM_DPU, "num_query_found", 0, sizeof(uint32_t) * QUERY_NUM, DPU_XFER_DEFAULT));
+  DPU_ASSERT(dpu_push_xfer(set, DPU_XFER_FROM_DPU, "num_query_found", 0, sizeof(uint32_t) * QUERY_NUM, DPU_XFER_ASYNC));
   dpu_index = 0;
 
   DPU_ASSERT(dpu_sync(set));
@@ -152,7 +152,6 @@ int main() {
     printf("\n");
   }
   free(num_query_found);
-  // DPU_ASSERT(dpu_free(set));
 
   return 0;
 }
