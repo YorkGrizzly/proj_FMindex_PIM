@@ -19,7 +19,7 @@ __mram uint32_t sampled_OCC[((L_LENGTH - 1) / (SAMPLE_RATE) + 1) * OCC_INDEX_NUM
 __host uint32_t offsets[OCC_INDEX_NUM];
 __host uint32_t query[QUERY_LENGTH];
 __host uint32_t num_query_found[QUERY_NUM];
-
+//__host uint32_t num_query_found;
 uint32_t query_index = 0;
 
 int main() {
@@ -43,6 +43,7 @@ int main() {
     bool not_found_flag = 0;
     
     num_query_found[query_index] = 0;
+    // num_query_found = 0;
 
     if(offsets[query[0]] == 0) {
         SEARCH_ROUND = 0;
@@ -116,8 +117,10 @@ int main() {
     if(range_min > range_max || not_found_flag == 1) num_query_found[query_index] = 0;
     else num_query_found[query_index] = range_max - range_min + 1;
 
-    query_index ++;
+    // if(range_min > range_max || not_found_flag == 1) num_query_found = 0;
+    // else num_query_found = range_max - range_min + 1;
 
+    query_index ++;
 
     //printf("num_query_found: %d\n", num_query_found);
     return 0;
