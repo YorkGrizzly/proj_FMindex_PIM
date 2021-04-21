@@ -7,17 +7,20 @@
 
 
 #define STEP 2
-#define L_LENGTH 16
+#define L_LENGTH 101
 #define SAMPLE_RATE 9
 #define OCC_INDEX_NUM 25
-#define CHAR_QUERY_LENGTH 4
+#define CHAR_QUERY_LENGTH 8
+#define QUERY_NUM 2
 #define QUERY_LENGTH (CHAR_QUERY_LENGTH / STEP)
 
-__mram uint16_t L[L_LENGTH];
+__mram uint64_t L[L_LENGTH];
 __mram uint32_t sampled_OCC[((L_LENGTH - 1) / (SAMPLE_RATE) + 1) * OCC_INDEX_NUM];
 __host uint32_t offsets[OCC_INDEX_NUM];
 __host uint32_t query[QUERY_LENGTH];
-__host uint32_t num_query_found;
+__host uint32_t num_query_found[QUERY_NUM];
+
+uint32_t query_index = 0;
 
 int main() {
     // for(uint32_t i = 0; i < L_LENGTH; i++){
@@ -39,7 +42,7 @@ int main() {
     uint32_t SEARCH_ROUND = QUERY_LENGTH - 1;
     bool not_found_flag = 0;
     
-    num_query_found = 0;
+    num_query_found[query_index] = 0;
 
     if(offsets[query[0]] == 0) {
         SEARCH_ROUND = 0;
@@ -110,8 +113,10 @@ int main() {
         if(range_min > range_max) break;
     }
 
-    if(range_min > range_max || not_found_flag == 1) num_query_found = 0;
-    else num_query_found = range_max - range_min + 1;
+    if(range_min > range_max || not_found_flag == 1) num_query_found[query_index] = 0;
+    else num_query_found[query_index] = range_max - range_min + 1;
+
+    query_index ++;
 
 
     //printf("num_query_found: %d\n", num_query_found);
