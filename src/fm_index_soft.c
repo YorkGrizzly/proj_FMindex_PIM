@@ -21,7 +21,8 @@
  
 int main() {
   
-
+  clock_t start, finish;
+  double duration;
   //uint16_t L[L_LENGTH];
   uint32_t *L = malloc(sizeof(uint32_t) * L_LENGTH);
   //uint32_t sampled_OCC[(((L_LENGTH - 1) / (SAMPLE_RATE) + 1) * OCC_INDEX_NUM) * READ_NUM];
@@ -37,7 +38,7 @@ int main() {
   uint32_t scale = 1;
   char QUERY[CHAR_QUERY_LENGTH];
 
-  
+  start = clock();
 
   FILE *input_table = fopen("../table_soft.txt", "r");
   for(uint32_t j = 0; j < OCC_INDEX_NUM; j++){
@@ -71,7 +72,9 @@ int main() {
     }
   }
 
-
+  finish = clock();
+  duration = (double)(finish - start) / CLOCKS_PER_SEC;
+  printf("%f seconds\n", duration);
 
   uint32_t range_min;
   uint32_t range_max;
@@ -79,6 +82,8 @@ int main() {
   uint32_t update_range_max;
   uint32_t SEARCH_ROUND = QUERY_LENGTH - 1;
   bool not_found_flag = 0;
+
+  start = clock();
 
 
   for(uint32_t query_index = 0; query_index < QUERY_NUM; query_index++){
@@ -167,13 +172,16 @@ int main() {
     else num_query_found[query_index] = range_max - range_min + 1;
 
   }
-
+  
+  finish = clock();
+  duration = (double)(finish - start) / CLOCKS_PER_SEC;
+  printf("%f seconds\n", duration);
 
 
 
 
   for(uint32_t i = 0; i < QUERY_NUM; i++){
-    printf("QUERY %d found: %d\n", i, num_query_found[i]);
+    //printf("QUERY %d found: %d\n", i, num_query_found[i]);
   }
   free(num_query_found);
 

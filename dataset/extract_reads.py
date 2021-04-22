@@ -1,6 +1,6 @@
 import random
 
-selected_reads = random.sample(range(0, 999999), 64000)
+selected_reads = random.sample(range(0, 999999), 640)
 
 fastq_input = open("ERR174310.fastq", "r")
 output_file = open("extracted.fastq", "w")
