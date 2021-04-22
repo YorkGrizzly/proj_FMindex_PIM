@@ -1,0 +1,23 @@
+# ignore build files
+*.in
+*/*.in
+configure
+autom4te.cache/
+aclocal.m4
+*.swp
+depcomp
+install-sh
+missing
+build*
+*.o
+*.a
+Makefile
+
+config.h
+config.log
+config.status
+stamp-h1
+compile
+.deps
+
+SGA/sga
