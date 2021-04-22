@@ -6,8 +6,8 @@
 #include <math.h>
 #include <fstream>
 
-#define STEP 2
-#define OCC_SAMPLING_DIST 9
+#define STEP 4
+#define OCC_SAMPLING_DIST 64
 
 // using namespace std;
 
@@ -130,6 +130,7 @@ int main()
 {
     std::ifstream in_DNAReadsFile("../dataset/extracted_sequences.txt");
     std::ofstream out_TableFile("../table.txt");
+    std::ofstream out_QueryFile("../query.txt");
 
     // const std::string reference_string = "ATCGAGCGCGCATCG$";
     // std::cout << "size of reference: " << reference_string.length() << std::endl;
@@ -138,6 +139,9 @@ int main()
     // rotate and sort reads from table.txt
     for (std::string read; getline(in_DNAReadsFile, read);)
     {
+        read.append("$");
+        std::string query = read.substr(0, 48);
+        out_QueryFile << query << "\n";
         std::vector<std::string> sorted_strings = rotate_and_sort(read);
 
         std::vector<size_t> F_offsets(pow(5, STEP), 0);
