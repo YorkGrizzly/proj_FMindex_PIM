@@ -9,21 +9,12 @@
 #include <math.h>
 
 #define DPU_BINARY "fm_index_dpu"
-<<<<<<< HEAD
 #define STEP 4  // step size of L column
 #define L_LENGTH 102  // length of L column (rows)
 #define SAMPLE_RATE 64  // sample rate of occ
 #define OCC_INDEX_NUM 625  // number of occs per occ entry (depends on step)
 #define CHAR_QUERY_LENGTH 48  // length of searching genome
 #define QUERY_NUM 640  // number of queries
-=======
-#define STEP 2  // step size of L column
-#define L_LENGTH 101  // length of L column (rows)
-#define SAMPLE_RATE 9  // sample rate of occ
-#define OCC_INDEX_NUM 25  // number of occs per occ entry (depends on step)
-#define CHAR_QUERY_LENGTH 8  // length of searching genome
-#define QUERY_NUM 2  // number of queries
->>>>>>> 84aa954db0806bdbc9ec7e0aa385798faf2e006a
 #define DPU_NUM 640  // number of DPUs
 #define QUERY_LENGTH (CHAR_QUERY_LENGTH / STEP)  // length of encoded queries
 
@@ -32,11 +23,7 @@ int main() {
   
 
   //uint16_t L[L_LENGTH * DPU_NUM];
-<<<<<<< HEAD
   uint32_t *L = malloc(sizeof(uint32_t) * L_LENGTH * DPU_NUM);
-=======
-  uint64_t *L = malloc(sizeof(uint64_t) * L_LENGTH * DPU_NUM);
->>>>>>> 84aa954db0806bdbc9ec7e0aa385798faf2e006a
   //uint32_t sampled_OCC[(((L_LENGTH - 1) / (SAMPLE_RATE) + 1) * OCC_INDEX_NUM) * DPU_NUM];
   uint32_t *sampled_OCC = malloc(sizeof(uint32_t) * (((L_LENGTH - 1) / (SAMPLE_RATE) + 1) * OCC_INDEX_NUM) * DPU_NUM);
   //uint32_t offsets[OCC_INDEX_NUM * DPU_NUM];
@@ -47,12 +34,8 @@ int main() {
   uint32_t *num_query_found = malloc(sizeof(uint32_t) * DPU_NUM * QUERY_NUM);
   uint32_t dpu_index = 0;
   uint32_t scale = 1;
-<<<<<<< HEAD
   uint32_t num_query_found_total;
   char QUERY[CHAR_QUERY_LENGTH];
-=======
-  char QUERY[CHAR_QUERY_LENGTH] = "GCGCTCTA";
->>>>>>> 84aa954db0806bdbc9ec7e0aa385798faf2e006a
 
   
   struct dpu_set_t set, dpu;
@@ -61,11 +44,7 @@ int main() {
   DPU_ASSERT(dpu_load(set, DPU_BINARY, NULL));
 
   // read occ_table, L_column, F_offsets
-<<<<<<< HEAD
   FILE *input_table = fopen("../table.txt", "r");
-=======
-  FILE *input = fopen("../table.txt", "r");
->>>>>>> 84aa954db0806bdbc9ec7e0aa385798faf2e006a
   for(uint32_t i = 0; i < DPU_NUM; i++){
     for(uint32_t j = 0; j < OCC_INDEX_NUM; j++){
       fscanf(input_table, "%d", &offsets[i * OCC_INDEX_NUM + j]);
@@ -86,11 +65,7 @@ int main() {
     dpu_index ++;
   }
   // push contents of host buffer to DPUs
-<<<<<<< HEAD
   DPU_ASSERT(dpu_push_xfer(set, DPU_XFER_TO_DPU, "L", 0, sizeof(uint32_t) * L_LENGTH, DPU_XFER_ASYNC));
-=======
-  DPU_ASSERT(dpu_push_xfer(set, DPU_XFER_TO_DPU, "L", 0, sizeof(uint64_t) * L_LENGTH, DPU_XFER_ASYNC));
->>>>>>> 84aa954db0806bdbc9ec7e0aa385798faf2e006a
   dpu_index = 0;
 
   DPU_FOREACH(set, dpu) {
@@ -122,14 +97,8 @@ int main() {
   FILE *input_query = fopen("../query.txt", "r");
 
   for(uint32_t query_num = 0; query_num < QUERY_NUM; query_num++){
-<<<<<<< HEAD
     fscanf(input_query, "%s\n", QUERY);
     //printf("QUERY %d: %s\n", query_num, QUERY);
-=======
-    if(query_num == 1){
-      strncpy(QUERY, "TTTTTTTT", CHAR_QUERY_LENGTH);
-    }
->>>>>>> 84aa954db0806bdbc9ec7e0aa385798faf2e006a
     for(uint32_t i = 0; i < QUERY_LENGTH; i++){
       scale = 1;
       query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] = 0;
@@ -167,13 +136,8 @@ int main() {
   }
 
   DPU_FOREACH(set, dpu) {
-<<<<<<< HEAD
     DPU_ASSERT(dpu_prepare_xfer(dpu, &num_query_found[dpu_index * QUERY_NUM]));
     dpu_index ++;
-=======
-        DPU_ASSERT(dpu_prepare_xfer(dpu, &num_query_found[dpu_index * QUERY_NUM]));
-        dpu_index ++;
->>>>>>> 84aa954db0806bdbc9ec7e0aa385798faf2e006a
   }
   DPU_ASSERT(dpu_push_xfer(set, DPU_XFER_FROM_DPU, "num_query_found", 0, sizeof(uint32_t) * QUERY_NUM, DPU_XFER_ASYNC));
   dpu_index = 0;
