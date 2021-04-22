@@ -6,6 +6,7 @@
 #include <perfcounter.h>
 
 
+<<<<<<< HEAD
 #define STEP 4
 #define L_LENGTH 102
 #define SAMPLE_RATE 64
@@ -15,6 +16,17 @@
 #define QUERY_LENGTH (CHAR_QUERY_LENGTH / STEP)
 
 __mram uint32_t L[L_LENGTH];
+=======
+#define STEP 2
+#define L_LENGTH 101
+#define SAMPLE_RATE 9
+#define OCC_INDEX_NUM 25
+#define CHAR_QUERY_LENGTH 8
+#define QUERY_NUM 2
+#define QUERY_LENGTH (CHAR_QUERY_LENGTH / STEP)
+
+__mram uint64_t L[L_LENGTH];
+>>>>>>> 84aa954db0806bdbc9ec7e0aa385798faf2e006a
 __mram uint32_t sampled_OCC[((L_LENGTH - 1) / (SAMPLE_RATE) + 1) * OCC_INDEX_NUM];
 __host uint32_t offsets[OCC_INDEX_NUM];
 __host uint32_t query[QUERY_LENGTH];
