@@ -124,9 +124,4 @@ int main() {
 
     //printf("num_query_found: %d\n", num_query_found);
     return 0;
-<<<<<<< HEAD
 }
-=======
-}
-
->>>>>>> 076aaea60f343b93c61f5ea41dc1c1ddbdf94646
