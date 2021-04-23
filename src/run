@@ -2,8 +2,13 @@ dpu-upmem-dpurte-clang -DNR_TASKLETS=1 fm_index_dpu.c -o fm_index_dpu
 gcc --std=c99 fm_index_host.c -o fm_index_host `dpu-pkg-config --cflags --libs dpu`
 time ./fm_index_host
 <<<<<<< HEAD
+<<<<<<< HEAD
 #gcc --std=c99 fm_index_soft.c -o fm_index_soft
 #time ./fm_index_soft
+=======
+gcc --std=c99 fm_index_soft.c -o fm_index_soft
+time ./fm_index_soft
+>>>>>>> ec233f8b9636a3558f2b8d98c84b97b8870c5bb7
 =======
 gcc --std=c99 fm_index_soft.c -o fm_index_soft
 time ./fm_index_soft
