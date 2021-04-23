@@ -7,7 +7,7 @@
 #include <fstream>
 
 #define STEP 4
-#define OCC_SAMPLING_DIST 64
+#define OCC_SAMPLING_DIST 128
 
 // using namespace std;
 
@@ -130,8 +130,9 @@ void extract_tables(const std::vector<std::string> &rotated_and_sorted_strings, 
 
 int main()
 {
-    std::ifstream in_DNAReadsFile("../dataset/extracted_sequences.txt");
-    std::ofstream out_TableFile("../table_soft.txt");
+    std::ifstream in_DNAReadsFile("../dataset/extracted_sequences_64000.txt");
+    std::ofstream out_TableFile("../table_soft_64000.txt");
+    std::ofstream out_QueryFile("../query_64000.txt");
 
     // const std::string reference_string = "ATCGAGCGCGCATCG$";
     // std::cout << "size of reference: " << reference_string.length() << std::endl;
@@ -142,6 +143,8 @@ int main()
     for (std::string read; getline(in_DNAReadsFile, read);)
     {
         read.append("$");
+        std::string query = read.substr(0, 48);
+        out_QueryFile << query << "\n";
         rotate_and_push(read);
     }
 
@@ -161,39 +164,39 @@ int main()
     extract_tables(rotated_and_sorted_strings, F_offsets, L_column, occ_table);
 
     // print F offsets
-    std::cout << "printing F offsets:" << std::endl;
-    for (size_t i = 0; i < F_offsets.size(); ++i)
-    {
-        if (F_offsets[i])
-        {
-            std::cout << decode_to_string(i) << ": ";
-            std::cout << F_offsets[i] << std::endl;
-        }
-    }
+    // std::cout << "printing F offsets:" << std::endl;
+    // for (size_t i = 0; i < F_offsets.size(); ++i)
+    // {
+    //     if (F_offsets[i])
+    //     {
+    //         std::cout << decode_to_string(i) << ": ";
+    //         std::cout << F_offsets[i] << std::endl;
+    //     }
+    // }
 
-    //print L column
-    std::cout << "printing L column:" << std::endl;
-    for (uint32_t a : L_column)
-    {
-        std::cout << decode_to_string(a) << std::endl;
-        // std::cout << a << std::endl;
-    }
+    // //print L column
+    // std::cout << "printing L column:" << std::endl;
+    // for (uint32_t a : L_column)
+    // {
+    //     std::cout << decode_to_string(a) << std::endl;
+    //     // std::cout << a << std::endl;
+    // }
 
-    // print occ table
-    std::cout << "printing Occ table:" << std::endl;
-    for (size_t i = 0; i < occ_table[0].size(); ++i)
-    {
-        std::cout << decode_to_string(i) << " ";
-    }
-    std::cout << std::endl;
-    for (auto &occ_entry : occ_table)
-    {
-        for (uint32_t &occ : occ_entry)
-        {
-            std::cout << occ << std::string(STEP, ' ');
-        }
-        std::cout << std::endl;
-    }
+    // // print occ table
+    // std::cout << "printing Occ table:" << std::endl;
+    // for (size_t i = 0; i < occ_table[0].size(); ++i)
+    // {
+    //     std::cout << decode_to_string(i) << " ";
+    // }
+    // std::cout << std::endl;
+    // for (auto &occ_entry : occ_table)
+    // {
+    //     for (uint32_t &occ : occ_entry)
+    //     {
+    //         std::cout << occ << std::string(STEP, ' ');
+    //     }
+    //     std::cout << std::endl;
+    // }
 
     for (int a : F_offsets)
     {

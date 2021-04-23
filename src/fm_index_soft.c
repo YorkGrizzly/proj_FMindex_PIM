@@ -11,11 +11,11 @@
 
 #define STEP 4  // step size of L column
 #define L_LENGTH 102 * READ_NUM  // length of L column (rows)
-#define SAMPLE_RATE 64  // sample rate of occ
+#define SAMPLE_RATE 128  // sample rate of occ
 #define OCC_INDEX_NUM 625  // number of occs per occ entry (depends on step)
 #define CHAR_QUERY_LENGTH 48  // length of searching genome
-#define QUERY_NUM 640  // number of queries
-#define READ_NUM 640  // number of DPUs
+#define QUERY_NUM 64000  // number of queries
+#define READ_NUM 64000  // number of reads
 #define QUERY_LENGTH (CHAR_QUERY_LENGTH / STEP)  // length of encoded queries
 
  
@@ -40,7 +40,7 @@ int main() {
 
   // start = clock();
 
-  FILE *input_table = fopen("../table_soft.txt", "r");
+  FILE *input_table = fopen("../table_soft_64000.txt", "r");
   for(uint32_t j = 0; j < OCC_INDEX_NUM; j++){
     fscanf(input_table, "%d", &offsets[j]);
   }
@@ -54,7 +54,7 @@ int main() {
 
 
 
-  FILE *input_query = fopen("../query.txt", "r");
+  FILE *input_query = fopen("../query_sorted_64000.txt", "r");
 
   for(uint32_t query_num = 0; query_num < QUERY_NUM; query_num++){
     fscanf(input_query, "%s\n", QUERY);
@@ -181,8 +181,16 @@ int main() {
 
 
   for(uint32_t i = 0; i < QUERY_NUM; i++){
-    printf("QUERY %d found: %d\n", i, num_query_found[i]);
+    if(i % 1000 == 0) printf("QUERY %d found: %d\n", i, num_query_found[i]);
   }
+
+  printf("query searching part: %f seconds\n", duration);
+  printf("average searching a query: %f seconds\n", duration / QUERY_NUM);
+  free(L);
+  free(sampled_OCC);
+  free(offsets);
+  free(query_all);
+  free(query);
   free(num_query_found);
 
   return 0;

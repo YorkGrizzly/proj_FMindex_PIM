@@ -11,7 +11,7 @@
 #define DPU_BINARY "fm_index_dpu"
 #define STEP 4  // step size of L column
 #define L_LENGTH 102 * READS_PER_DPU  // length of L column (rows)
-#define SAMPLE_RATE 64  // sample rate of occ
+#define SAMPLE_RATE 100  // sample rate of occ
 #define OCC_INDEX_NUM 625  // number of occs per occ entry (depends on step)
 #define CHAR_QUERY_LENGTH 48  // length of searching genome
 #define QUERY_NUM 640  // number of queries
@@ -32,7 +32,7 @@ int main() {
   //uint32_t offsets[OCC_INDEX_NUM * DPU_NUM];
   uint32_t *offsets = malloc(sizeof(uint32_t) * OCC_INDEX_NUM * DPU_NUM);
   //uint32_t query[QUERY_LENGTH * QUERY_NUM];
-  uint32_t *query = malloc(sizeof(uint32_t) * QUERY_LENGTH * QUERY_NUM);
+  uint32_t *query_all = malloc(sizeof(uint32_t) * QUERY_LENGTH * QUERY_NUM);
   //uint32_t num_query_found[DPU_NUM * QUERY_NUM];
   uint32_t *num_query_found = malloc(sizeof(uint32_t) * DPU_NUM * QUERY_NUM);
   uint32_t dpu_index = 0;
@@ -48,7 +48,7 @@ int main() {
   DPU_ASSERT(dpu_load(set, DPU_BINARY, NULL));
 
   // read occ_table, L_column, F_offsets
-  FILE *input_table = fopen("../table.txt", "r");
+  FILE *input_table = fopen("../table_NDP_640.txt", "r");
   for(uint32_t i = 0; i < DPU_NUM; i++){
     for(uint32_t j = 0; j < OCC_INDEX_NUM; j++){
       fscanf(input_table, "%d", &offsets[i * OCC_INDEX_NUM + j]);
@@ -99,23 +99,27 @@ int main() {
   // }
 
 
-  FILE *input_query = fopen("../query.txt", "r");
+  FILE *input_query = fopen("../query_sorted_640.txt", "r");
 
   for(uint32_t query_num = 0; query_num < QUERY_NUM; query_num++){
     fscanf(input_query, "%s\n", QUERY);
     //printf("QUERY %d: %s\n", query_num, QUERY);
     for(uint32_t i = 0; i < QUERY_LENGTH; i++){
       scale = 1;
-      query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] = 0;
+      query_all[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] = 0;
       for(uint32_t j = 0; j < STEP; j++){
-        if(QUERY[STEP * i + STEP - j - 1] == 'A') query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 1;
-        if(QUERY[STEP * i + STEP - j - 1] == 'C') query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 2;
-        if(QUERY[STEP * i + STEP - j - 1] == 'G') query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 3;
-        if(QUERY[STEP * i + STEP - j - 1] == 'T') query[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 4;
+        if(QUERY[STEP * i + STEP - j - 1] == 'A') query_all[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 1;
+        if(QUERY[STEP * i + STEP - j - 1] == 'C') query_all[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 2;
+        if(QUERY[STEP * i + STEP - j - 1] == 'G') query_all[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 3;
+        if(QUERY[STEP * i + STEP - j - 1] == 'T') query_all[query_num * QUERY_LENGTH + (QUERY_LENGTH - 1 - i)] += scale * 4;
         scale *= 5;
       }
     }
   }
+
+  DPU_ASSERT(dpu_broadcast_to(set, "query_all", 0, &query_all[0], sizeof(uint32_t) * QUERY_LENGTH * QUERY_NUM, DPU_XFER_ASYNC));
+  DPU_ASSERT(dpu_sync(set));
+  free(query_all);
 
   // finish = clock();
   // duration = (double)(finish - start) / CLOCKS_PER_SEC;
@@ -129,7 +133,7 @@ int main() {
 	  //   DPU_ASSERT(dpu_copy_to(dpu, "query", 0, query, sizeof(query)));
     // }
 
-    DPU_ASSERT(dpu_broadcast_to(set, "query", 0, &query[QUERY_LENGTH * i], sizeof(uint32_t) * QUERY_LENGTH, DPU_XFER_ASYNC));
+    //DPU_ASSERT(dpu_broadcast_to(set, "query", 0, &query[QUERY_LENGTH * i], sizeof(uint32_t) * QUERY_LENGTH, DPU_XFER_ASYNC));
 
     DPU_ASSERT(dpu_launch(set, DPU_ASYNCHRONOUS));
   
@@ -159,7 +163,6 @@ int main() {
   // printf("query searching: %f seconds\n", duration);
 
   DPU_ASSERT(dpu_free(set));
-  free(query);
 
   num_query_found_total = 0; 
 
@@ -168,7 +171,7 @@ int main() {
       num_query_found_total += num_query_found[j * QUERY_NUM + i];
       //printf("QUERY %d found in DPU %d: %d   ", j, i, num_query_found[i * QUERY_NUM + j]);
     }
-    printf("QUERY %d found: %d\n", i, num_query_found_total);
+    if(i % 10 == 0) printf("QUERY %d found: %d\n", i, num_query_found_total);
     num_query_found_total = 0;
   }
   free(num_query_found);
