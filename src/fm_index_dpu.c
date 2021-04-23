@@ -7,11 +7,12 @@
 
 
 #define STEP 4
-#define L_LENGTH 102
+#define L_LENGTH 102 * READS_PER_DPU
 #define SAMPLE_RATE 64
 #define OCC_INDEX_NUM 625
 #define CHAR_QUERY_LENGTH 48
 #define QUERY_NUM 640
+#define READS_PER_DPU 1
 #define QUERY_LENGTH (CHAR_QUERY_LENGTH / STEP)
 
 __mram uint32_t L[L_LENGTH];

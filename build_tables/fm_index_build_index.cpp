@@ -8,7 +8,8 @@
 
 #define STEP 4
 #define OCC_SAMPLING_DIST 64
-
+#define DPU_NUM 640
+#define READS_PER_DPU 1
 // using namespace std;
 
 // void print_vector(std::vector<auto> my_vec)
@@ -20,9 +21,11 @@
 //     std::cout << std::endl;
 // }
 
-std::vector<std::string> rotate_and_sort(const std::string &reference_string)
+std::vector<std::string> rotated_and_sorted_strings;
+
+void rotate_and_push(const std::string &reference_string)
 {
-    std::vector<std::string> rotated_and_sorted_strings;
+    //std::vector<std::string> rotated_and_sorted_strings;
 
     std::string current_rotation = reference_string;
     // std::cout << current_rotation.size() << std::endl;
@@ -32,8 +35,8 @@ std::vector<std::string> rotate_and_sort(const std::string &reference_string)
         current_rotation.erase(current_rotation.begin());
         rotated_and_sorted_strings.push_back(current_rotation);
     }
-    std::sort(rotated_and_sorted_strings.begin(), rotated_and_sorted_strings.end());
-    return rotated_and_sorted_strings;
+    //std::sort(rotated_and_sorted_strings.begin(), rotated_and_sorted_strings.end());
+    //return rotated_and_sorted_strings;
 }
 
 uint32_t encode_to_int(std::string string_to_encode)
@@ -112,7 +115,7 @@ void extract_tables(const std::vector<std::string> &rotated_and_sorted_strings, 
             F_offsets[encoded_F] = i + 1;
         }
 
-        uint32_t encoded_L = encode_to_int(rotated_and_sorted_strings[i].substr(rotated_and_sorted_strings.size() - STEP));
+        uint32_t encoded_L = encode_to_int(rotated_and_sorted_strings[i].substr(rotated_and_sorted_strings[i].size() - STEP));
         // L_column
         L_column.push_back(encoded_L);
 
@@ -130,32 +133,37 @@ int main()
 {
     std::ifstream in_DNAReadsFile("../dataset/extracted_sequences.txt");
     std::ofstream out_TableFile("../table.txt");
-    std::ofstream out_QueryFile("../query.txt");
 
     // const std::string reference_string = "ATCGAGCGCGCATCG$";
     // std::cout << "size of reference: " << reference_string.length() << std::endl;
 
 
     // rotate and sort reads from table.txt
-    for (std::string read; getline(in_DNAReadsFile, read);)
+    for (int i = 0; i < DPU_NUM; i++)
     {
-        read.append("$");
-        std::string query = read.substr(0, 48);
-        out_QueryFile << query << "\n";
-        std::vector<std::string> sorted_strings = rotate_and_sort(read);
+        rotated_and_sorted_strings.clear();
+        std::string read;
+        for (int j = 0; j < READS_PER_DPU; j++)
+        {
+            getline(in_DNAReadsFile, read);
+            read.append("$");
+            rotate_and_push(read);
+        }
+
+        std::sort(rotated_and_sorted_strings.begin(), rotated_and_sorted_strings.end());
 
         std::vector<size_t> F_offsets(pow(5, STEP), 0);
         std::vector<uint32_t> L_column;
         std::vector<std::vector<uint32_t>> occ_table;
 
         // print rotated strings
-        for (size_t i = 0; i < sorted_strings.size(); ++i)
+        for (size_t i = 0; i < rotated_and_sorted_strings.size(); ++i)
         {
             std::cout << i << ": ";
-            std::cout << sorted_strings[i] << std::endl;
+            std::cout << rotated_and_sorted_strings[i] << std::endl;
         }
 
-        extract_tables(sorted_strings, F_offsets, L_column, occ_table);
+        extract_tables(rotated_and_sorted_strings, F_offsets, L_column, occ_table);
 
         // print F offsets
         std::cout << "printing F offsets:" << std::endl;
