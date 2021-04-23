@@ -20,7 +20,7 @@
 
  
 int main() {
-  
+  printf("\nSoftware Only:\n");
   clock_t start, finish;
   double duration;
   //uint16_t L[L_LENGTH];
@@ -38,7 +38,7 @@ int main() {
   uint32_t scale = 1;
   char QUERY[CHAR_QUERY_LENGTH];
 
-  start = clock();
+  // start = clock();
 
   FILE *input_table = fopen("../table_soft.txt", "r");
   for(uint32_t j = 0; j < OCC_INDEX_NUM; j++){
@@ -72,9 +72,9 @@ int main() {
     }
   }
 
-  finish = clock();
-  duration = (double)(finish - start) / CLOCKS_PER_SEC;
-  printf("%f seconds\n", duration);
+  // finish = clock();
+  // duration = (double)(finish - start) / CLOCKS_PER_SEC;
+  // printf("table loading: %f seconds\n", duration);
 
   uint32_t range_min;
   uint32_t range_max;
@@ -175,13 +175,13 @@ int main() {
   
   finish = clock();
   duration = (double)(finish - start) / CLOCKS_PER_SEC;
-  printf("%f seconds\n", duration);
+  printf("query searching: %f seconds\n", duration);
 
 
 
 
   for(uint32_t i = 0; i < QUERY_NUM; i++){
-    //printf("QUERY %d found: %d\n", i, num_query_found[i]);
+    printf("QUERY %d found: %d\n", i, num_query_found[i]);
   }
   free(num_query_found);
 

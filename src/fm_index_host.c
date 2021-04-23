@@ -10,17 +10,20 @@
 
 #define DPU_BINARY "fm_index_dpu"
 #define STEP 4  // step size of L column
-#define L_LENGTH 102  // length of L column (rows)
+#define L_LENGTH 102 * READS_PER_DPU  // length of L column (rows)
 #define SAMPLE_RATE 64  // sample rate of occ
 #define OCC_INDEX_NUM 625  // number of occs per occ entry (depends on step)
 #define CHAR_QUERY_LENGTH 48  // length of searching genome
 #define QUERY_NUM 640  // number of queries
 #define DPU_NUM 640  // number of DPUs
+#define READS_PER_DPU 1
 #define QUERY_LENGTH (CHAR_QUERY_LENGTH / STEP)  // length of encoded queries
 
  
 int main() {
-  
+  printf("In DRAM Processing:\n");
+  // clock_t start, finish;
+  // double duration;
 
   //uint16_t L[L_LENGTH * DPU_NUM];
   uint32_t *L = malloc(sizeof(uint32_t) * L_LENGTH * DPU_NUM);
@@ -37,7 +40,8 @@ int main() {
   uint32_t num_query_found_total;
   char QUERY[CHAR_QUERY_LENGTH];
 
-  
+  // start = clock();
+
   struct dpu_set_t set, dpu;
 
   DPU_ASSERT(dpu_alloc(DPU_NUM, NULL, &set));
@@ -94,6 +98,7 @@ int main() {
   //   DPU_ASSERT(dpu_copy_to(dpu, "offsets", 0, offsets, sizeof(uint32_t) * OCC_INDEX_NUM));
   // }
 
+
   FILE *input_query = fopen("../query.txt", "r");
 
   for(uint32_t query_num = 0; query_num < QUERY_NUM; query_num++){
@@ -112,6 +117,11 @@ int main() {
     }
   }
 
+  // finish = clock();
+  // duration = (double)(finish - start) / CLOCKS_PER_SEC;
+  // printf("table loading: %f seconds\n", duration);
+
+  // start = clock();
 
   for(uint32_t i = 0; i < QUERY_NUM; i++){
 
@@ -132,7 +142,7 @@ int main() {
     // }
     // DPU_ASSERT(dpu_push_xfer(set, DPU_XFER_FROM_DPU, "num_query_found", 0, sizeof(uint32_t), DPU_XFER_ASYNC));
     // dpu_index = 0;
-    //DPU_ASSERT(dpu_sync(set));
+    // DPU_ASSERT(dpu_sync(set));
   }
 
   DPU_FOREACH(set, dpu) {
@@ -143,6 +153,10 @@ int main() {
   dpu_index = 0;
 
   DPU_ASSERT(dpu_sync(set));
+
+  // finish = clock();
+  // duration = (double)(finish - start) / CLOCKS_PER_SEC;
+  // printf("query searching: %f seconds\n", duration);
 
   DPU_ASSERT(dpu_free(set));
   free(query);
