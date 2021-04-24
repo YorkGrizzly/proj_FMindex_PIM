@@ -7,7 +7,7 @@
 #include <fstream>
 
 #define STEP 4
-#define OCC_SAMPLING_DIST 128
+#define OCC_SAMPLING_DIST 510
 
 // using namespace std;
 
@@ -130,9 +130,9 @@ void extract_tables(const std::vector<std::string> &rotated_and_sorted_strings, 
 
 int main()
 {
-    std::ifstream in_DNAReadsFile("../dataset/extracted_sequences_64000.txt");
-    std::ofstream out_TableFile("../table_soft_64000.txt");
-    std::ofstream out_QueryFile("../query_64000.txt");
+    std::ifstream in_DNAReadsFile("../dataset/extracted_sequences_6400.txt");
+    std::ofstream out_TableFile("../tables_and_queries/table_soft_6400.txt");
+    std::ofstream out_QueryFile("../tables_and_queries/query_6400.txt");
 
     // const std::string reference_string = "ATCGAGCGCGCATCG$";
     // std::cout << "size of reference: " << reference_string.length() << std::endl;
@@ -155,11 +155,11 @@ int main()
     std::vector<std::vector<uint32_t>> occ_table;
 
     //print rotated strings
-    for (size_t i = 0; i < rotated_and_sorted_strings.size(); ++i)
-    {
-        std::cout << i << ": ";
-        std::cout << rotated_and_sorted_strings[i] << std::endl;
-    }
+    // for (size_t i = 0; i < rotated_and_sorted_strings.size(); ++i)
+    // {
+    //     std::cout << i << ": ";
+    //     std::cout << rotated_and_sorted_strings[i] << std::endl;
+    // }
 
     extract_tables(rotated_and_sorted_strings, F_offsets, L_column, occ_table);
 
