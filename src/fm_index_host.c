@@ -11,12 +11,12 @@
 #define DPU_BINARY "fm_index_dpu"
 #define STEP 4  // step size of L column
 #define L_LENGTH 102 * READS_PER_DPU  // length of L column (rows)
-#define SAMPLE_RATE 100  // sample rate of occ
+#define SAMPLE_RATE 510  // sample rate of occ
 #define OCC_INDEX_NUM 625  // number of occs per occ entry (depends on step)
 #define CHAR_QUERY_LENGTH 48  // length of searching genome
-#define QUERY_NUM 640  // number of queries
+#define QUERY_NUM 6400  // number of queries
 #define DPU_NUM 640  // number of DPUs
-#define READS_PER_DPU 1
+#define READS_PER_DPU 10
 #define QUERY_LENGTH (CHAR_QUERY_LENGTH / STEP)  // length of encoded queries
 
  
@@ -48,7 +48,7 @@ int main() {
   DPU_ASSERT(dpu_load(set, DPU_BINARY, NULL));
 
   // read occ_table, L_column, F_offsets
-  FILE *input_table = fopen("../table_NDP_640.txt", "r");
+  FILE *input_table = fopen("../tables_and_queries/table_NDP_6400.txt", "r");
   for(uint32_t i = 0; i < DPU_NUM; i++){
     for(uint32_t j = 0; j < OCC_INDEX_NUM; j++){
       fscanf(input_table, "%d", &offsets[i * OCC_INDEX_NUM + j]);
@@ -99,7 +99,7 @@ int main() {
   // }
 
 
-  FILE *input_query = fopen("../query_sorted_640.txt", "r");
+  FILE *input_query = fopen("../tables_and_queries/query_sorted_6400.txt", "r");
 
   for(uint32_t query_num = 0; query_num < QUERY_NUM; query_num++){
     fscanf(input_query, "%s\n", QUERY);
@@ -127,7 +127,7 @@ int main() {
 
   // start = clock();
 
-  for(uint32_t i = 0; i < QUERY_NUM; i++){
+  //for(uint32_t i = 0; i < QUERY_NUM; i++){
 
     // DPU_FOREACH(set, dpu) {
 	  //   DPU_ASSERT(dpu_copy_to(dpu, "query", 0, query, sizeof(query)));
@@ -147,7 +147,7 @@ int main() {
     // DPU_ASSERT(dpu_push_xfer(set, DPU_XFER_FROM_DPU, "num_query_found", 0, sizeof(uint32_t), DPU_XFER_ASYNC));
     // dpu_index = 0;
     // DPU_ASSERT(dpu_sync(set));
-  }
+  //}
 
   DPU_FOREACH(set, dpu) {
     DPU_ASSERT(dpu_prepare_xfer(dpu, &num_query_found[dpu_index * QUERY_NUM]));
@@ -171,7 +171,7 @@ int main() {
       num_query_found_total += num_query_found[j * QUERY_NUM + i];
       //printf("QUERY %d found in DPU %d: %d   ", j, i, num_query_found[i * QUERY_NUM + j]);
     }
-    if(i % 10 == 0) printf("QUERY %d found: %d\n", i, num_query_found_total);
+    if(i % 100 == 0) printf("QUERY %d found: %d\n", i, num_query_found_total);
     num_query_found_total = 0;
   }
   free(num_query_found);
