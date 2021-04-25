@@ -17,7 +17,7 @@ BARRIER_INIT(my_barrier, NR_TASKLETS);
 #define QUERY_NUM 6400
 #define READS_PER_DPU 10
 #define QUERY_LENGTH (CHAR_QUERY_LENGTH / STEP)
-#define RESULT_BUFFER_SIZE 100
+#define RESULT_BUFFER_SIZE 2
 #define NR_QUERY_PER_TASKLETS (QUERY_NUM / NR_TASKLETS)
 
 
@@ -162,6 +162,6 @@ int main() {
         //printf("num_query_found: %d\n", num_query_found);
 
     }
-    barrier_wait(&my_barrier);
+    //barrier_wait(&my_barrier);
     return 0;
 }
