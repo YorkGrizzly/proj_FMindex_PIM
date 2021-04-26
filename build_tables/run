@@ -1,0 +1,7 @@
+g++ fm_index_build_index.cpp -o fm_index_build_index
+./fm_index_build_index
+g++ fm_index_build_index_soft.cpp -o fm_index_build_index_soft
+./fm_index_build_index_soft
+g++ sort_query_by_rank.cpp -o sort_query_by_rank
+./sort_query_by_rank
+
