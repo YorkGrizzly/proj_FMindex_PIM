@@ -1,0 +1,10 @@
+libdir=/home/frmsa168/proj_FMindex_PIM/sga/bamtools_installations/lib64
+includedir=/home/frmsa168/proj_FMindex_PIM/sga/bamtools_installations/include
+
+Name: BamTools
+Description: BamTools is a C++ library for reading and manipulating BAM files
+Version: 2.5.1
+
+Requires.private: zlib
+Libs: -L${libdir} -lbamtools
+Cflags: -I${includedir}
