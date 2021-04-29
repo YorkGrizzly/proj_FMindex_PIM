@@ -8,7 +8,7 @@
 
 #define STEP 4
 #define OCC_SAMPLING_DIST 100
-#define DPU_NUM 640
+#define DPU_NUM 640 
 #define READS_PER_DPU 1
 // using namespace std;
 

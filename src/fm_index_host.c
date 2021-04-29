@@ -44,7 +44,7 @@ int main() {
 
   struct dpu_set_t set, dpu;
 
-  DPU_ASSERT(dpu_alloc(DPU_NUM, NULL, &set));
+  DPU_ASSERT(dpu_alloc(DPU_NUM, "nrJobsPerRank=64", &set));
   DPU_ASSERT(dpu_load(set, DPU_BINARY, NULL));
 
   // read occ_table, L_column, F_offsets

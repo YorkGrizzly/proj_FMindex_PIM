@@ -175,7 +175,7 @@ int main() {
   
   finish = clock();
   duration = (double)(finish - start) / CLOCKS_PER_SEC;
-  printf("query searching: %f seconds\n", duration);
+  // printf("query searching: %f seconds\n", duration);
 
 
 
