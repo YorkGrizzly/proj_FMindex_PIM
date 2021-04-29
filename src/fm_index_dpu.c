@@ -11,11 +11,11 @@ BARRIER_INIT(my_barrier, NR_TASKLETS);
 
 #define STEP 4
 #define L_LENGTH 102 * READS_PER_DPU
-#define SAMPLE_RATE 100
+#define SAMPLE_RATE 102
 #define OCC_INDEX_NUM 625
 #define CHAR_QUERY_LENGTH 48
-#define QUERY_NUM 640
-#define READS_PER_DPU 1
+#define QUERY_NUM 6400
+#define READS_PER_DPU 10
 #define QUERY_LENGTH (CHAR_QUERY_LENGTH / STEP)
 #define RESULT_BUFFER_SIZE 32
 #define NR_QUERY_PER_TASKLETS (QUERY_NUM / NR_TASKLETS)
@@ -63,6 +63,7 @@ int main() {
 
         uint32_t range_min;
         uint32_t range_max;
+        uint32_t prev_range;
         uint32_t update_range_min;
         uint32_t update_range_max;
         uint32_t SEARCH_ROUND = QUERY_LENGTH - 1;
@@ -90,7 +91,7 @@ int main() {
             }
         }
 
-        //printf("range_min: %d, range_max: %d\n", range_min, range_max);
+        // printf("range_min: %d, range_max: %d\n", range_min, range_max);
         for(uint32_t search_round = 0; search_round < SEARCH_ROUND; search_round++){
             if(offsets[query[me()][search_round + 1]] == 0) {
                 not_found_flag = 1;
@@ -98,7 +99,7 @@ int main() {
             }
 
         //update range_min
-            mram_read(&L[SAMPLE_RATE * (range_min / SAMPLE_RATE)], &L_cache[me()][0], sizeof(uint32_t) * (SAMPLE_RATE + 2));
+            if(range_min / SAMPLE_RATE != prev_range / SAMPLE_RATE) mram_read(&L[SAMPLE_RATE * (range_min / SAMPLE_RATE)], &L_cache[me()][0], sizeof(uint32_t) * (SAMPLE_RATE + 2));
 
             if((range_min % SAMPLE_RATE <= SAMPLE_RATE / 2) || (range_min / SAMPLE_RATE >= (L_LENGTH - 1) / SAMPLE_RATE)){
                 update_range_min = offsets[query[me()][search_round + 1]] - 1 + sampled_OCC[((range_min / SAMPLE_RATE) * OCC_INDEX_NUM) + query[me()][search_round + 1]] - 1;
@@ -120,7 +121,7 @@ int main() {
 
 
             //update range_max
-            mram_read(&L[SAMPLE_RATE * (range_max / SAMPLE_RATE)], &L_cache[me()][0], sizeof(uint32_t) * (SAMPLE_RATE + 2));
+            if(range_max / SAMPLE_RATE != range_min / SAMPLE_RATE) mram_read(&L[SAMPLE_RATE * (range_max / SAMPLE_RATE)], &L_cache[me()][0], sizeof(uint32_t) * (SAMPLE_RATE + 2));
             if((range_max % SAMPLE_RATE <= SAMPLE_RATE / 2) || (range_max / SAMPLE_RATE >= (L_LENGTH - 1) / SAMPLE_RATE)){
                 update_range_max = offsets[query[me()][search_round + 1]] - 1 + sampled_OCC[((range_max / SAMPLE_RATE) * OCC_INDEX_NUM) + query[me()][search_round + 1]] - 1;
                 for(uint32_t k = 1; k <= range_max % SAMPLE_RATE; k++){
@@ -139,7 +140,8 @@ int main() {
             }
         
 
-            //printf("updated range_min: %d, updated range_max: %d\n", update_range_min, update_range_max);
+            // printf("updated range_min: %d, updated range_max: %d\n", update_range_min, update_range_max);
+            prev_range = range_max;
             range_min = update_range_min;
             range_max = update_range_max;
 
@@ -160,6 +162,8 @@ int main() {
         //query_index ++;
 
         //printf("num_query_found: %d\n", num_query_found);
+
+        
 
     }
     //barrier_wait(&my_barrier);

@@ -10,8 +10,8 @@
 
 int main()
 {
-    std::ifstream in_QueryFile("../tables_and_queries/query_640.txt");
-    std::ofstream out_QueryFile("../tables_and_queries/query_sorted_640.txt");
+    std::ifstream in_QueryFile("../tables_and_queries/query_6400.txt");
+    std::ofstream out_QueryFile("../tables_and_queries/query_sorted_6400.txt");
     
     std::vector<std::string> querys;
     std::vector<std::string> querys_sorted;
