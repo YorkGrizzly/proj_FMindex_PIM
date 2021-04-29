@@ -1,3 +1,5 @@
+g++ sort_read_by_rank.cpp -o sort_read_by_rank
+./sort_read_by_rank
 g++ fm_index_build_index.cpp -o fm_index_build_index
 ./fm_index_build_index
 g++ fm_index_build_index_soft.cpp -o fm_index_build_index_soft
