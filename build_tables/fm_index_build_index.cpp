@@ -9,7 +9,7 @@
 #define STEP 4
 #define OCC_SAMPLING_DIST 102
 #define DPU_NUM 640 
-#define READS_PER_DPU 10
+#define READS_PER_DPU 1000
 // using namespace std;
 
 // void print_vector(std::vector<auto> my_vec)
@@ -131,8 +131,8 @@ void extract_tables(const std::vector<std::string> &rotated_and_sorted_strings, 
 
 int main()
 {
-    std::ifstream in_DNAReadsFile("../dataset/extracted_sorted_sequences_6400.txt");
-    std::ofstream out_TableFile("../tables_and_queries/table_NDP_6400.txt");
+    std::ifstream in_DNAReadsFile("../dataset/extracted_sequences_640000.txt");
+    std::ofstream out_TableFile("../tables_and_queries/table_NDP_640000.txt");
 
     // const std::string reference_string = "ATCGAGCGCGCATCG$";
     // std::cout << "size of reference: " << reference_string.length() << std::endl;

@@ -6,12 +6,12 @@
 #include <math.h>
 #include <fstream>
 
-
+#define READS_PER_DPU 1000
 
 int main()
 {
-    std::ifstream in_QueryFile("../tables_and_queries/query_6400.txt");
-    std::ofstream out_QueryFile("../tables_and_queries/query_sorted_6400.txt");
+    std::ifstream in_QueryFile("../tables_and_queries/query_640000.txt");
+    std::ofstream out_QueryFile("../tables_and_queries/query_sorted_640000.txt");
     
     std::vector<std::string> querys;
     std::vector<std::string> querys_sorted;
@@ -26,10 +26,13 @@ int main()
         querys.push_back(query);
     }
 
-    for(int i = 0; i < querys.size() / 10; i++){
-        for(int j = 0; j < 10; j++){
-            std::string query = querys[(querys.size() / 10) * j + i];
-            querys_sorted.push_back(query);
+    for(int i = 0; i < READS_PER_DPU; i++){
+        for(int j = 0; j < querys.size() / (READS_PER_DPU * 10); j++){
+            for(int k = 0; k < 10; k++){
+                std::string query = querys[(querys.size() / 10) * k + j * READS_PER_DPU + i];
+                printf("%d\n", (querys.size() / 10) * k + j * READS_PER_DPU + i);
+                querys_sorted.push_back(query);
+            }
         }
     }
 

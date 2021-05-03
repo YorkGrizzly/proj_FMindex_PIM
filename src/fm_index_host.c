@@ -14,9 +14,9 @@
 #define SAMPLE_RATE 102  // sample rate of occ
 #define OCC_INDEX_NUM 625  // number of occs per occ entry (depends on step)
 #define CHAR_QUERY_LENGTH 48  // length of searching genome
-#define QUERY_NUM 6400  // number of queries
+#define QUERY_NUM 640000  // number of queries
 #define DPU_NUM 640  // number of DPUs
-#define READS_PER_DPU 10
+#define READS_PER_DPU 1000
 #define QUERY_LENGTH (CHAR_QUERY_LENGTH / STEP)  // length of encoded queries
 
  
@@ -48,7 +48,7 @@ int main() {
   DPU_ASSERT(dpu_load(set, DPU_BINARY, NULL));
 
   // read occ_table, L_column, F_offsets
-  FILE *input_table = fopen("../tables_and_queries/table_NDP_6400.txt", "r");
+  FILE *input_table = fopen("../tables_and_queries/table_NDP_640000.txt", "r");
   for(uint32_t i = 0; i < DPU_NUM; i++){
     for(uint32_t j = 0; j < OCC_INDEX_NUM; j++){
       fscanf(input_table, "%d", &offsets[i * OCC_INDEX_NUM + j]);
@@ -99,7 +99,7 @@ int main() {
   // }
 
 
-  FILE *input_query = fopen("../tables_and_queries/query_sorted_6400.txt", "r");
+  FILE *input_query = fopen("../tables_and_queries/query_sorted_640000.txt", "r");
 
   for(uint32_t query_num = 0; query_num < QUERY_NUM; query_num++){
     fscanf(input_query, "%s\n", QUERY);
@@ -174,7 +174,7 @@ int main() {
       num_query_found_total += num_query_found[j * QUERY_NUM + i];
       //printf("QUERY %d found in DPU %d: %d   ", j, i, num_query_found[i * QUERY_NUM + j]);
     }
-    if(i % 100 == 0) printf("QUERY %d found: %d\n", i, num_query_found_total);
+    if(i % 10000 == 0) printf("QUERY %d found: %d\n", i, num_query_found_total);
     num_query_found_total = 0;
   }
   free(num_query_found);

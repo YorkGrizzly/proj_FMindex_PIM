@@ -54,7 +54,7 @@ int main() {
 
 
 
-  FILE *input_query = fopen("../tables_and_queries/query_sorted_6400.txt", "r");
+  FILE *input_query = fopen("../tables_and_queries/query_6400.txt", "r");
 
   for(uint32_t query_num = 0; query_num < QUERY_NUM; query_num++){
     fscanf(input_query, "%s\n", QUERY);
