@@ -1,5 +1,10 @@
+<<<<<<< HEAD
 #g++ sort_read_by_rank.cpp -o sort_read_by_rank
 #./sort_read_by_rank
+=======
+g++ sort_read_by_rank.cpp -o sort_read_by_rank
+./sort_read_by_rank
+>>>>>>> f8fd55c3a1a9a73b890816e99440ecc06295e811
 g++ fm_index_build_index.cpp -o fm_index_build_index
 ./fm_index_build_index
 g++ fm_index_build_index_soft.cpp -o fm_index_build_index_soft
