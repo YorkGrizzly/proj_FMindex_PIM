@@ -3,4 +3,4 @@ gcc --std=c99 fm_index_host.c -o fm_index_host `dpu-pkg-config --cflags --libs d
 ./fm_index_host
 gcc --std=c99 -O3 fm_index_soft.c -o fm_index_soft
 ./fm_index_soft
-dpu-profiling functions -o fm_index.vcf -A -a ./fm_index_host
+#dpu-profiling functions -o fm_index.vcf -A -a ./fm_index_host

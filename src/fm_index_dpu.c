@@ -60,7 +60,6 @@ int main() {
     // update_range_min = 0;
     // update_range_max = 0;
     for(int query_index = me() * NR_QUERY_PER_TASKLETS; query_index < (me() + 1) * NR_QUERY_PER_TASKLETS; query_index++){
-
         uint32_t range_min;
         uint32_t range_max;
         uint32_t prev_range;
